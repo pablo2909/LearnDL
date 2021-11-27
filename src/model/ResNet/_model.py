@@ -16,16 +16,17 @@ class VisionNetwork(nn.Module):
     def _flatten(self, image: torch.Tensor) -> torch.Tensor:
         """This function flatten an input tensor.
 
-        Takes as input a tensor of shape (B, C1,...,Cn) and returns a tensor of
-        shape (B, C1 * ... * Cn).
+        Takes as input a tensor of shape (B, C1, C2, C3) and returns a tensor of
+        shape (B, C1 * C2 * C3). Typically C1 is the channel number of the image
 
         Args:
-            image: a torch.tensor of shape (B, C1,...,Cn)
+            image: a torch.tensor of shape (B, C1, C2, C3)
         Returns:
-            tensor of shape (B, C1 * ... * Cn)
+            tensor of shape (B, C1 * C2 * C3)
         """
-
-        pass
+        B = torch.shape[0]
+        reshaped_image = image.reshape(B, -1)
+        return reshaped_image
 
 
 class MostSimpleNetwork(VisionNetwork):
@@ -56,9 +57,11 @@ class MostSimpleNetwork(VisionNetwork):
         """Forward method of the network.
 
         Args:
-            x: Input tensor of shape (batch_size, height, width)
+            x: Input tensor of shape (B, height, width)
 
         Returns:
-            A tensor of shape (batch_size, 10).
+            A tensor of shape (B, 10).
         """
         x = self._flatten(x)
+        x = self.net(x)
+        return x
