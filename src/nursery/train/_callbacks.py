@@ -12,8 +12,12 @@ class Callback:
 
     def __call__(self, cb_name):
         f = getattr(self, cb_name, None)
+        # print(self.__class__.__name__)
+        # print(cb_name)
         if f and f():
+            # print("True")
             return True
+        # print("False")
         return False
 
     def set_runner(self, run):
@@ -59,13 +63,13 @@ class TrainModel(Callback):
     _order = 10
 
     def forward_pass(self):
-        self.pred = self.model(self.run.item[0])
+        self.run.pred = self.model(self.run.item[0])
 
     def compute_loss(self):
-        self.loss = self.run.loss_func(self.pred, self.run.item[1])
+        self.run.loss_val = self.run.loss_func(self.run.pred, self.run.item[1])
 
     def backward(self):
-        self.loss.backward()
+        self.run.loss_val.backward()
 
     def step(self):
         self.run.opt.step()
@@ -73,3 +77,16 @@ class TrainModel(Callback):
     def zero_grad(self):
         self.run.opt.zero_grad()
 
+
+class PrintInfo(Callback):
+    _order = 15
+
+    def compute_loss(self):
+        print(
+            f"Epoch: {self.run.n_epochs}, Target: {self.run.item[1]}, Loss: {self.run.loss_val}"
+        )
+
+
+class Novalidation(Callback):
+    def begin_validate(self):
+        return True
