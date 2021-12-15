@@ -125,3 +125,6 @@ dmypy.json
 
 #Testing notebook
 notebooks/test.ipynb
+
+#Datasets
+./data

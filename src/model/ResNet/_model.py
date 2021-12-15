@@ -13,19 +13,26 @@ class VisionNetwork(nn.Module):
         super(VisionNetwork, self).__init__()
         pass
 
-    def _flatten(self, image: torch.Tensor) -> torch.Tensor:
+    @staticmethod
+    def _flatten(image: torch.Tensor, close_channel: bool = False) -> torch.Tensor:
         """This function flatten an input tensor.
 
         Takes as input a tensor of shape (B, C1, C2, C3) and returns a tensor of
-        shape (B, C1 * C2 * C3). Typically C1 is the channel number of the image
+        shape (B, C1 * C2 * C3). Typically C1 is the number of channels
+        of the image.
+        You can flatten the image in two ways.
+
 
         Args:
             image: a torch.tensor of shape (B, C1, C2, C3)
         Returns:
             tensor of shape (B, C1 * C2 * C3)
         """
-        B = torch.shape[0]
-        reshaped_image = image.reshape(B, -1)
+        B, C1 = image.shape[0], image.shape[1]
+        if close_channel:
+            reshaped_image = image.reshape(B, C1, -1).permute(0, 2, 1).reshape(B, -1)
+        else:
+            reshaped_image = image.reshape(B, -1)
         return reshaped_image
 
 
@@ -35,22 +42,20 @@ class MostSimpleNetwork(VisionNetwork):
 
     def __init__(self) -> None:
         super(MostSimpleNetwork, self).__init__()
-        self.net = nn.ModuleList(
-            [
-                nn.Linear(32 * 32, 64 * 64),
-                nn.ReLU(),
-                nn.Linear(64 * 64, 64 * 64),
-                nn.ReLU(),
-                nn.Linear(64 * 64, 64 * 64),
-                nn.ReLU(),
-                nn.Linear(64 * 64, 32 * 32),
-                nn.ReLU(),
-                nn.Linear(32 * 32, 16 * 16),
-                nn.ReLU(),
-                nn.Linear(16 * 16, 8 * 8),
-                nn.ReLU(),
-                nn.Linear(8 * 8, 10),
-            ]
+        self.net = nn.Sequential(
+            nn.Linear(28 * 28, 64 * 64),
+            nn.ReLU(),
+            nn.Linear(64 * 64, 64 * 64),
+            nn.ReLU(),
+            nn.Linear(64 * 64, 64 * 64),
+            nn.ReLU(),
+            nn.Linear(64 * 64, 32 * 32),
+            nn.ReLU(),
+            nn.Linear(32 * 32, 16 * 16),
+            nn.ReLU(),
+            nn.Linear(16 * 16, 8 * 8),
+            nn.ReLU(),
+            nn.Linear(8 * 8, 10),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
