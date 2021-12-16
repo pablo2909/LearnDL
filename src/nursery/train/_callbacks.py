@@ -1,3 +1,7 @@
+import wandb
+from attr import asdict
+
+
 class Callback:
     """
     Mother class of all the callbacks. It serves three purposes:
@@ -12,12 +16,8 @@ class Callback:
 
     def __call__(self, cb_name):
         f = getattr(self, cb_name, None)
-        # print(self.__class__.__name__)
-        # print(cb_name)
         if f and f():
-            # print("True")
             return True
-        # print("False")
         return False
 
     def set_runner(self, run):
@@ -34,9 +34,6 @@ class TrainEvalCallback(Callback):
     """
 
     _order = 0
-
-    def __repr__(self):
-        return "TrainEvalCallback \n"
 
     def begin_fit(self):
         self.run.n_epochs = 0.0
@@ -90,3 +87,20 @@ class PrintInfo(Callback):
 class Novalidation(Callback):
     def begin_validate(self):
         return True
+
+
+class WandB(Callback):
+    _order = 15
+
+    def __init__(self, train_args):
+        self.train_args = train_args
+
+    def begin_fit(self):
+        wandb.init(
+            project="my-test-project",
+            entity="pablo2909",
+            config=asdict(self.train_args),
+        )
+
+    def compute_loss(self):
+        wandb.log({"loss": self.run.loss_val.item()})

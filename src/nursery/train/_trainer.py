@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import List
 
 import torch
 import torch.nn as nn
@@ -12,7 +12,7 @@ from torch.optim import Adam, Optimizer
 from torch.utils.data import DataLoader, Subset, random_split
 from torchvision.transforms import transforms
 
-from _callbacks import Novalidation, PrintInfo, TrainEvalCallback, TrainModel
+from _callbacks import Callback, Novalidation, PrintInfo, TrainEvalCallback, TrainModel
 
 
 @attrs(kw_only=True, on_setattr=validate)
@@ -60,13 +60,12 @@ class Trainer(BaseTrainer):
     def loss_func(self) -> nn.Module:
         return nn.CrossEntropyLoss()
 
-    def __call__(self, model: nn.Module):
+    def __call__(self, model: nn.Module, callbacks: List[Callback]) -> None:
         learner = Learner(
             model=model,
             opt=self.opt(model.parameters()),
             data=DataBunch(self.train_dl, None),
             loss_func=self.loss_func,
         )
-        callbacks = [TrainEvalCallback(), TrainModel(), PrintInfo(), Novalidation()]
         run = Runner(callbacks)
         run.fit(self.hp.epochs, learner)

@@ -38,23 +38,6 @@ class Learner:
 
 
 class Runner:
-    """
-    Runner is the main class to train the network. It is instantciated with
-    a list of callbacks, that will specify how the training is done.
-    To train the model, the function fit must be called. It takes as parameters
-    a learner and a number of epochs. For each epoch, it will iterate over
-    the dataloader and execute such functions: self('name'). Exectuting such
-    functions will iterate over all the callbacks specified in the cbs
-    argument. If it finds a function called 'name' in the callback it will
-    execute it.
-    """
-
-    def __repr__(self):
-        rep = "\nRunner: List of Callbacks used :\n"
-        for cb in sorted(self.cbs, key=lambda x: x._order):
-            rep += f"--| {repr(cb)} \n"
-        return rep
-
     def __init__(self, cbs: list):
         self.cbs = cbs
         self.stop = False
@@ -98,7 +81,6 @@ class Runner:
             self("after_batch")
 
     def all_batches(self, dl):
-        # self.n_iters = dl.length
         self.n_iters = len(dl)
         try:
             for itr, item in enumerate(dl):

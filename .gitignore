@@ -127,4 +127,7 @@ dmypy.json
 notebooks/test.ipynb
 
 #Datasets
-./data
+data/
+
+#wandb
+wandb/
